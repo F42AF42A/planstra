@@ -4,7 +4,7 @@
   <url>
     <loc>https://planstra.ru/</loc>
     <xhtml:link rel="alternate" hreflang="ru" href="https://planstra.ru/"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://planstra.org/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://planstra.pro/"/>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>

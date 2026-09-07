@@ -82,7 +82,7 @@ HTML-разметка. Их нельзя двигать, терять и пер�
 ## Домены
 
 Один репозиторий на GitHub Pages = один домен. Поэтому версии и разнесены:
-`planstra.ru` → `planstra`, `planstra.org` → `planstra-en`.
+`planstra.ru` → `planstra`, `planstra.pro` → `planstra-en`.
 
 **Важный порядок действий.** Домен в настройках Pages подключается **после**
 того, как DNS начал отвечать адресами GitHub, а не до. Иначе GitHub начнёт

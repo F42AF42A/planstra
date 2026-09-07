@@ -28,6 +28,7 @@ L = {
    domain='planstra.ru',
    home='https://planstra.ru/',
    cur='RUB',
+   altlabel='English version',
    features=['45 разделов бренд-стратегии','PESTLE-анализ и SWOT',
              'Расчёт ёмкости рынка','Сегментация целевой аудитории',
              'Разработка УТП','Карта позиционирования',
@@ -45,9 +46,10 @@ L = {
         'guidance and PDF export.',
    ogdesc='45 slides: SWOT, PESTLE, audiences, positioning, mission, blue '
           'ocean. Examples, guidance, PDF export.',
-   domain='planstra.org',
-   home='https://planstra.org/',
+   domain='planstra.pro',
+   home='https://planstra.pro/',
    cur='USD',
+   altlabel='Русская версия',
    features=['45 brand strategy sections','PESTLE analysis and SWOT',
              'Market size calculation','Target audience segmentation',
              'USP development','Positioning map',
@@ -234,6 +236,18 @@ def jsonld(body, loc):
     return '\n'.join(out), len(qa)
 
 
+def altlang(body, lang):
+    """Ссылка на другую языковую версию. В исходнике она одна на оба языка,
+    поэтому английская сборка иначе ссылалась бы сама на себя."""
+    other = 'en' if lang == 'ru' else 'ru'
+    o = L[other]
+    html = (f'<p class="alang">{L[lang]["altlabel"]}: '
+            f'<a href="{o["home"]}" hreflang="{o["lang"]}">{o["domain"]}</a></p>')
+    new, n = re.subn(r'<p class="alang">.*?</p>', html, body, count=1, flags=re.S)
+    assert n == 1, 'не найден блок ссылки на другую версию'
+    return new
+
+
 def wrap(body, loc):
     ld, n = jsonld(body, loc)
     alt = '\n'.join(
@@ -309,6 +323,7 @@ def build(lang):
     else:
         src = patch_download(src)
 
+    src = altlang(src, lang)
     html = wrap(src, L[lang])
 
     out = os.path.join(ROOT, 'dist', lang)
