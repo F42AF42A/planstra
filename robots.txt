@@ -1,0 +1,25 @@
+User-agent: *
+Allow: /
+
+# Краулеры генеративных поисковиков пускаем явно: страница описывает
+# бесплатный инструмент, и цитирование нам на пользу.
+User-agent: GPTBot
+Allow: /
+User-agent: OAI-SearchBot
+Allow: /
+User-agent: ChatGPT-User
+Allow: /
+User-agent: ClaudeBot
+Allow: /
+User-agent: Claude-Web
+Allow: /
+User-agent: PerplexityBot
+Allow: /
+User-agent: Google-Extended
+Allow: /
+User-agent: Applebot-Extended
+Allow: /
+User-agent: YandexBot
+Allow: /
+
+Sitemap: https://planstra.ru/sitemap.xml

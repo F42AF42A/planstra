@@ -26,6 +26,15 @@ L = {
    ogdesc='45 слайдов: SWOT, PESTLE, аудитории, позиционирование, миссия, '
           'голубой океан. Примеры, подсказки, выгрузка в PDF.',
    domain='planstra.ru',
+   home='https://planstra.ru/',
+   cur='RUB',
+   features=['45 разделов бренд-стратегии','PESTLE-анализ и SWOT',
+             'Расчёт ёмкости рынка','Сегментация целевой аудитории',
+             'Разработка УТП','Карта позиционирования',
+             'Разработка миссии и карты бренда',
+             'Стратегическая канва голубого океана и решётка ERRC',
+             'Примеры на каждом шаге','Выгрузка в PDF и Markdown',
+             'Без регистрации, данные хранятся в браузере'],
  ),
  'en': dict(
    lang='en',
@@ -37,6 +46,15 @@ L = {
    ogdesc='45 slides: SWOT, PESTLE, audiences, positioning, mission, blue '
           'ocean. Examples, guidance, PDF export.',
    domain='planstra.org',
+   home='https://planstra.org/',
+   cur='USD',
+   features=['45 brand strategy sections','PESTLE analysis and SWOT',
+             'Market size calculation','Target audience segmentation',
+             'USP development','Positioning map',
+             'Mission and brand map',
+             'Blue ocean strategy canvas and ERRC grid',
+             'A worked example on every step','PDF and Markdown export',
+             'No sign-up, data stays in your browser'],
  ),
 }
 
@@ -171,8 +189,102 @@ def patch_locale_en(s):
     return s
 
 
+def jsonld(body, loc):
+    """Разметка Schema.org. Вопросы и ответы вынимаем из уже собранной
+    страницы, а не пишем повторно: две копии одного текста разойдутся
+    на первой же правке, и поисковик увидит разметку, не совпадающую
+    с содержимым, — за это он наказывает."""
+    def clean(t):
+        t = re.sub(r'<[^>]+>', '', t)
+        return re.sub(r'\s+', ' ', t).strip()
+
+    qa = []
+    for m in re.finditer(r'<details>\s*<summary>(.*?)</summary>\s*<p>(.*?)</p>',
+                         body, re.S):
+        qa.append((clean(m.group(1)), clean(m.group(2))))
+
+    site = loc['home']
+    app = {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": loc['site'],
+        "url": site,
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Any",
+        "browserRequirements": "Requires JavaScript",
+        "description": loc['desc'],
+        "inLanguage": loc['lang'],
+        "isAccessibleForFree": True,
+        "offers": {"@type": "Offer", "price": "0",
+                   "priceCurrency": loc['cur'], "availability":
+                   "https://schema.org/InStock"},
+        "featureList": loc['features'],
+    }
+    out = ['<script type="application/ld+json">'
+           + json.dumps(app, ensure_ascii=False, separators=(',', ':'))
+           + '</script>']
+    if qa:
+        faq = {"@context": "https://schema.org", "@type": "FAQPage",
+               "mainEntity": [{"@type": "Question", "name": q,
+                               "acceptedAnswer": {"@type": "Answer", "text": a}}
+                              for q, a in qa]}
+        out.append('<script type="application/ld+json">'
+                   + json.dumps(faq, ensure_ascii=False, separators=(',', ':'))
+                   + '</script>')
+    return '\n'.join(out), len(qa)
+
+
 def wrap(body, loc):
-    return HEAD.format(**loc) + body + '\n</body>\n</html>\n'
+    ld, n = jsonld(body, loc)
+    alt = '\n'.join(
+        f'<link rel="alternate" hreflang="{L[k]["lang"]}" href="{L[k]["home"]}">'
+        for k in ('ru', 'en'))
+    alt += f'\n<link rel="alternate" hreflang="x-default" href="{L["en"]["home"]}">'
+    alt += f'\n<link rel="canonical" href="{loc["home"]}">'
+    head = HEAD.format(**loc) + alt + '\n' + ld + '\n'
+    print(f'      разметка: {n} вопросов в FAQPage')
+    return head + body + '\n</body>\n</html>\n'
+
+
+ROBOTS = """User-agent: *
+Allow: /
+
+# Краулеры генеративных поисковиков пускаем явно: страница описывает
+# бесплатный инструмент, и цитирование нам на пользу.
+User-agent: GPTBot
+Allow: /
+User-agent: OAI-SearchBot
+Allow: /
+User-agent: ChatGPT-User
+Allow: /
+User-agent: ClaudeBot
+Allow: /
+User-agent: Claude-Web
+Allow: /
+User-agent: PerplexityBot
+Allow: /
+User-agent: Google-Extended
+Allow: /
+User-agent: Applebot-Extended
+Allow: /
+User-agent: YandexBot
+Allow: /
+
+Sitemap: {home}sitemap.xml
+"""
+
+SITEMAP = """<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>{home}</loc>
+    <xhtml:link rel="alternate" hreflang="ru" href="{ru}"/>
+    <xhtml:link rel="alternate" hreflang="en" href="{en}"/>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>
+"""
 
 
 def reextract():
@@ -209,6 +321,10 @@ def build(lang):
                 shutil.copy(src_a, os.path.join(out, asset)); break
     open(os.path.join(out, '.nojekyll'), 'w').close()
     open(os.path.join(out, 'CNAME'), 'w').write(L[lang]['domain'] + '\n')
+    open(os.path.join(out, 'robots.txt'), 'w', encoding='utf-8').write(
+        ROBOTS.format(home=L[lang]['home']))
+    open(os.path.join(out, 'sitemap.xml'), 'w', encoding='utf-8').write(
+        SITEMAP.format(home=L[lang]['home'], ru=L['ru']['home'], en=L['en']['home']))
 
     left = len(re.findall(r'[А-Яа-яЁё]', html))
     print(f'  {lang}: {len(html):,} знаков, кириллицы осталось {left}')
