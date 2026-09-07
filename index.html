@@ -23,6 +23,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@500;700&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<title>Планстра</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@500;700&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
 :root{
   --ground:#08090A; --panel:#101214; --panel-2:#15181A; --hair:#1F2426;
@@ -329,8 +333,6 @@ td.lock input[data-cvfac]:focus{outline:1px solid var(--acc);outline-offset:-1px
   .mark[aria-pressed="false"]{color:transparent}
 }
 </style>
-</head>
-<body>
 
 <div class="app">
   <aside class="rail">
@@ -2499,11 +2501,10 @@ document.getElementById("btnExport").onclick = async ()=>{
     try{ await saver.save({filename:fileName(), data:md}); toast("Файл .md сохранён"); return; }
     catch(err){ if(err && err.code==="declined") return; }
   }
-  try{ localSave(fileName(), md); toast("Файл .md выгружен"); }
-  catch(e){
-    try{ await navigator.clipboard.writeText(md); toast("Markdown скопирован в буфер обмена"); }
-    catch(e2){ toast("Не удалось выгрузить файл"); }
-  }
+  try{
+    localSave(fileName(), md);
+    toast("Файл .md сохранён");
+  }catch(e){ toast("Не удалось выгрузить файл"); }
 };
 document.getElementById("btnImport").onclick = ()=> document.getElementById("filein").click();
 document.getElementById("filein").onchange = e=>{
@@ -2545,5 +2546,6 @@ function toast(msg){
 }
 renderAll();
 </script>
+
 </body>
 </html>
