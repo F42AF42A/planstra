@@ -1,0 +1,4 @@
+src/dist/
+src/i18n/units.json
+src/i18n/ru_strings.json
+*.tgz

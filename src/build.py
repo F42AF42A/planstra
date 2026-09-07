@@ -203,7 +203,10 @@ def build(lang):
     os.makedirs(out, exist_ok=True)
     open(os.path.join(out, 'index.html'), 'w', encoding='utf-8').write(html)
     for asset in ('favicon.svg', 'og.png'):
-        shutil.copy(os.path.join(ROOT, 'deploy', asset), os.path.join(out, asset))
+        for cand in ('assets', 'deploy', '.'):
+            src_a = os.path.join(ROOT, cand, asset)
+            if os.path.exists(src_a):
+                shutil.copy(src_a, os.path.join(out, asset)); break
     open(os.path.join(out, '.nojekyll'), 'w').close()
     open(os.path.join(out, 'CNAME'), 'w').write(L[lang]['domain'] + '\n')
 

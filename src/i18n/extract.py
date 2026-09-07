@@ -11,7 +11,10 @@ JS не парсим: файл состоит из вложенных шабло
 """
 import re, json
 
-SRC='/home/claude/strategos.html'
+import os
+HERE = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(HERE)
+SRC  = os.path.join(ROOT, 'strategos.html')
 s=open(SRC,encoding='utf-8').read()
 CYR=re.compile(r'[А-Яа-яЁё]')
 BOUND=set('<>"\'`{}$\n\\')
@@ -63,9 +66,9 @@ def in_comment(p):
     return i >= 0 and cspans[i][0] <= p < cspans[i][1]
 out = [u for u in out if not in_comment(u['parts'][0][0])]
 
-json.dump(out,open('/home/claude/i18n/units.json','w',encoding='utf-8'),ensure_ascii=False)
+json.dump(out,open(os.path.join(HERE,'units.json'),'w',encoding='utf-8'),ensure_ascii=False)
 uniq=sorted({u['text'] for u in out})
-json.dump(uniq,open('/home/claude/i18n/ru_strings.json','w',encoding='utf-8'),
+json.dump(uniq,open(os.path.join(HERE,'ru_strings.json'),'w',encoding='utf-8'),
           ensure_ascii=False,indent=1)
 print('атомов:',len(raw),'| единиц:',len(out),'| уникальных:',len(uniq))
 print('знаков:',sum(len(x) for x in uniq))
