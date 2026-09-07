@@ -1302,9 +1302,25 @@ errc:{elim:"Звёзд-дрессировщиков.\nПредставления
 };
 
 /* ═══ ХРАНИЛИЩЕ ═══ */
-const KEY = "strategos.v2";
+const KEY = "planstra.v1";
+/* Как ключ назывался до переименования проекта. */
+const KEY_OLD = "strategos.v2";
 const Store = {
-  read(){ try{ const r=localStorage.getItem(KEY); return r?JSON.parse(r):null; }catch(e){ return null; } },
+  read(){
+    try{
+      const r = localStorage.getItem(KEY);
+      if(r) return JSON.parse(r);
+      /* Переносим работу, начатую под старым именем ключа: человек не
+         должен потерять заполненную стратегию из-за переименования. */
+      const old = localStorage.getItem(KEY_OLD);
+      if(old){
+        const p = JSON.parse(old);
+        localStorage.setItem(KEY, old);
+        return p;
+      }
+      return null;
+    }catch(e){ return null; }
+  },
   write(s){ try{ localStorage.setItem(KEY, JSON.stringify(s)); }catch(e){} }
 };
 const blank = ()=>({ meta:{name:""}, data:{}, pick:{} });
@@ -2497,12 +2513,14 @@ function toMD(){
     }
     (sc.tail||[]).forEach(x=>{ if(nz(v[x.k])) L.push(`**${x.label}.** ${one(v[x.k])}`,""); });
   });
-  L.push("","<!--strategos "+JSON.stringify(S)+" -->","");
+  L.push("","<!--planstra "+JSON.stringify(S)+" -->","");
   return L.join("\n");
 }
 
 function fromMD(txt){
-  const m = txt.match(/<!--strategos\s+([\s\S]*?)\s*-->/);
+  /* Старое имя маркера тоже принимаем: файлы, выгруженные до
+     переименования, должны открываться как ни в чём не бывало. */
+  const m = txt.match(/<!--(?:planstra|strategos)\s+([\s\S]*?)\s*-->/);
   if(m){
     try{
       const p = JSON.parse(m[1]);

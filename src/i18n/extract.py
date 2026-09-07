@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Извлекает переводимые единицы из strategos.html.
+"""Извлекает переводимые единицы из planstra-src.html.
 
 JS не парсим: файл состоит из вложенных шаблонных строк, наивный разбор
 кавычек ошибётся. Берём максимальные куски текста, ограниченные символами,
@@ -14,7 +14,7 @@ import re, json
 import os
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
-SRC  = os.path.join(ROOT, 'strategos.html')
+SRC  = os.path.join(ROOT, 'planstra-src.html')
 s=open(SRC,encoding='utf-8').read()
 CYR=re.compile(r'[А-Яа-яЁё]')
 BOUND=set('<>"\'`{}$\n\\')

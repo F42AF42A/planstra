@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Собирает обе версии Планстры из одного источника.
 
-Источник правды — strategos.html (русский). Английская версия получается
+Источник правды — planstra-src.html (русский). Английская версия получается
 подстановкой переводов по точным позициям из i18n/units.json: слепой
 заменой строк по всему файлу можно испортить код, поэтому режем по спанам.
 
@@ -11,7 +11,7 @@
 import json, re, os, sys, shutil
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
-SRC  = os.path.join(ROOT, 'strategos.html')
+SRC  = os.path.join(ROOT, 'planstra-src.html')
 
 # ─────────────────────────────────────────── локали
 
@@ -177,7 +177,7 @@ def wrap(body, loc):
 
 def reextract():
     """Позиции строк привязаны к байтам источника: любая правка
-    strategos.html их сдвигает. Поэтому извлекаем заново каждую сборку —
+    planstra-src.html их сдвигает. Поэтому извлекаем заново каждую сборку —
     иначе перевод вставится не туда и молча испортит код."""
     import subprocess
     subprocess.run(['python3', os.path.join(ROOT, 'i18n/extract.py')],
