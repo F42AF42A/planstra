@@ -279,24 +279,6 @@ td.lock input[data-cvfac]:focus{outline:1px solid var(--acc);outline-offset:-1px
 .stat.wide{display:flex;flex-direction:column;justify-content:center;gap:6px}
 .stat.wide a{font-family:var(--mono);font-size:15px;color:var(--acc);text-decoration:none}
 .stat.wide a:hover{text-decoration:underline}
-/* Кнопка поддержки намеренно тихая: без рамки и заливки, цветом ниже
-   основного текста. Она должна находиться, когда её ищут, и не тянуть
-   на себя внимание, когда не ищут. */
-.stat.wide .donate{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;
-  margin-top:4px;border:0;background:none;color:var(--faint);opacity:.75;
-  padding:2px 0;font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;transition:.12s}
-.stat.wide .donate:hover,
-.stat.wide .donate[aria-expanded="true"]{color:var(--dim);opacity:1}
-.stat.wide .donate:focus-visible{outline:2px solid var(--acc);outline-offset:3px;border-radius:4px}
-#h-donate{border-left-color:var(--hair)}
-#h-donate b{color:var(--dim);font-weight:500}
-.note .dnet{margin:6px 0 10px;font-family:var(--mono);font-size:11px;letter-spacing:.09em;
-  text-transform:uppercase;color:var(--faint)}
-.note .addr{display:block;width:100%;text-align:left;background:var(--panel-2);
-  border:1px solid var(--hair);border-radius:7px;padding:10px 12px;color:var(--dim);
-  font-family:var(--mono);font-size:13px;word-break:break-all;line-height:1.5;transition:.12s}
-.note .addr:hover{border-color:#31383A;color:var(--text)}
-.note .dhint{margin:9px 0 0;color:var(--faint);font-size:12.5px}
 
 /* Описание продукта под «Обзором». Намеренно тихое: посетитель приходит
    работать, а не читать, — блок начинается ниже первого экрана и исчезает,
@@ -687,16 +669,6 @@ const BOOK = '<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"
 const SPARK = '<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true" focusable="false">'
   + '<path d="M8 1.2 9.35 5.5 13.6 7 9.35 8.5 8 12.8 6.65 8.5 2.4 7 6.65 5.5Z" fill="currentColor"/>'
   + '<path d="M12.9 10.4 13.5 12.2 15.2 12.8 13.5 13.4 12.9 15.2 12.3 13.4 10.6 12.8 12.3 12.2Z" fill="currentColor" opacity=".7"/>'
-  + '</svg>';
-/* Стопка монет. Одна монета со знаком номинала на 12 px превращается в
-   мутное пятно: внутренние штрихи сливаются с ободком. Силуэт стопки
-   читается и в иконке размером со строчную букву. */
-const COIN = '<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true" focusable="false">'
-  + '<ellipse cx="8" cy="4.3" rx="5.1" ry="2.3" fill="none" stroke="currentColor" stroke-width="1.3"/>'
-  + '<path d="M2.9 4.3v3.4c0 1.27 2.28 2.3 5.1 2.3s5.1-1.03 5.1-2.3V4.3" '
-  + 'fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>'
-  + '<path d="M2.9 7.7v3.4c0 1.27 2.28 2.3 5.1 2.3s5.1-1.03 5.1-2.3V7.7" '
-  + 'fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>'
   + '</svg>';
 
 
@@ -1800,15 +1772,7 @@ function startBody(){
     <div class="stat"><b id="st-pct">${total()}%</b><span>заполнено</span></div>
     <div class="stat"><b id="st-done">${doneCount()} / ${SECTIONS.length}</b><span>слайдов готово</span></div>
     <div class="stat wide"><span>По вопросам и предложениям</span>
-      <a href="mailto:fazullin@me.com">fazullin@me.com</a>
-      <button class="donate" data-note="h-donate" aria-expanded="false">${COIN} Задонатить</button></div>
-  </div>
-  <div class="note" id="h-donate">
-    <b>Поддержка развития проекта</b>
-    <p class="dnet">USDT · сеть Tron (TRC20)</p>
-    <button class="addr" data-copy="TJRXZnpGHeACqVtQSqFtkn351yd5fdRXg4"
-      title="Скопировать адрес">TJRXZnpGHeACqVtQSqFtkn351yd5fdRXg4</button>
-    <p class="dhint">Нажмите на адрес, чтобы скопировать. Проверьте сеть перед отправкой: TRC20, не ERC20.</p>
+      <a href="mailto:fazullin@me.com">fazullin@me.com</a></div>
   </div>
   <div class="h2">Паспорт стратегии</div>
   <div class="fields">
@@ -2494,7 +2458,7 @@ document.addEventListener("change", e=>{
 });
 
 document.addEventListener("click", e=>{
-  const b = e.target.closest("[data-go],[data-add],[data-del],[data-note],[data-act],[data-mark],[data-hyp],[data-hadd],[data-hdel],[data-hcut],[data-cvadd],[data-cvdel],[data-cvsadd],[data-cvsdel],[data-cvcut],[data-fill],[data-clear],[data-pick],[data-cut],[data-copy]");
+  const b = e.target.closest("[data-go],[data-add],[data-del],[data-note],[data-act],[data-mark],[data-hyp],[data-hadd],[data-hdel],[data-hcut],[data-cvadd],[data-cvdel],[data-cvsadd],[data-cvsdel],[data-cvcut],[data-fill],[data-clear],[data-pick],[data-cut]");
   if(!b) return;
   if(b.dataset.pick){
     const sc = sec(b.dataset.pick), next = !lit(sc);
@@ -2572,16 +2536,6 @@ document.addEventListener("click", e=>{
     const n = document.getElementById(b.dataset.note);
     const open = n.classList.toggle("on");
     b.setAttribute("aria-expanded", open); return;
-  }
-  if(b.dataset.copy){
-    /* Буфер обмена доступен не везде (http, старые движки) — на этот случай
-       выделяем адрес, чтобы его можно было скопировать руками. */
-    const txt = b.dataset.copy;
-    const done = ()=> toast("Адрес скопирован");
-    if(navigator.clipboard && navigator.clipboard.writeText){
-      navigator.clipboard.writeText(txt).then(done).catch(()=>selectNode(b));
-    } else selectNode(b);
-    return;
   }
   if(b.dataset.mark){
     const sc = sec(b.dataset.mark), v = d(sc.id); v.v = v.v || {};
@@ -2809,11 +2763,6 @@ window.addEventListener("afterprint", ()=>{
 });
 
 /* ═══ СТАРТ ═══ */
-function selectNode(el){
-  const r = document.createRange(); r.selectNodeContents(el);
-  const s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
-  toast("Выделено — скопируйте вручную");
-}
 let tt=null;
 function toast(msg){
   const el = document.getElementById("toast");
