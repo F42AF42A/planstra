@@ -184,8 +184,14 @@ def patch_locale_en(s):
     assert plural in s, 'не найден блок склонения'
     s = s.replace(plural, 'k===1 ? "slide" : "slides"', 1)
 
+    # Формат денег теперь один на весь файл — чиним его, а не две копии.
+    assert 'function money(x){' in s, 'не найдена функция money()'
+    n1 = s.count('(x/1e6).toFixed(1).replace(".",",")+" bn ₽"')
+    assert n1 == 1, f'ожидалась одна копия формата, найдено {n1}'
     s = s.replace('(x/1e6).toFixed(1).replace(".",",")+" bn ₽"',
                   '(x/1e6).toFixed(1)+" bn ₽"', 1)
+    n2 = s.count('Math.round(x).toLocaleString("ru-RU")')
+    assert n2 == 1, f'ожидалась одна копия toLocaleString, найдено {n2}'
     s = s.replace('Math.round(x).toLocaleString("ru-RU")',
                   'Math.round(x).toLocaleString("en-US")', 1)
     return s

@@ -101,6 +101,33 @@ h1{font-family:var(--disp);font-weight:700;font-size:30px;line-height:1.15;lette
 .whatis{margin:0 0 13px;padding-bottom:13px;border-bottom:1px solid var(--hair);color:var(--text);font-size:14px;line-height:1.55}
 .howto{color:var(--dim)}
 
+/* Сводка. Намеренно похожа на документ, а не на интерфейс: её показывают
+   с экрана и уносят в PDF, и в обоих случаях она должна читаться как лист,
+   а не как ещё одна форма. */
+.sumsheet{border:1px solid var(--hair);border-radius:10px;background:var(--panel);overflow:hidden}
+.sumhead{padding:18px 22px;border-bottom:1px solid var(--hair);background:var(--panel-2)}
+.sumhead b{font-family:var(--disp);font-size:18px;font-weight:500;display:block}
+.sumhead span{display:block;margin-top:4px;font-family:var(--mono);font-size:11px;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+.sumrow{display:grid;grid-template-columns:210px minmax(0,1fr);gap:20px;
+  padding:13px 22px;border-top:1px solid var(--hair)}
+.sumrow:first-of-type{border-top:0}
+.sumlab{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--acc);padding-top:3px}
+.sumval{font-size:14px;line-height:1.55;color:var(--text)}
+.sumrow.empty .sumlab{color:var(--faint)}
+.sumrow.empty .sumval{color:var(--faint)}
+.sumgo{background:none;border:0;padding:0;color:var(--dim);font-size:13.5px;
+  text-decoration:underline;text-underline-offset:2px}
+.sumgo:hover{color:var(--acc)}
+.sumnote{margin:14px 2px 0;color:var(--faint);font-size:12.5px}
+@media (max-width:900px){ .sumrow{grid-template-columns:1fr;gap:5px} }
+@media print{
+  .sumsheet{border-color:#D6DBD8}
+  .sumhead{background:none}
+  .sumgo,.sumnote,.sumrow.empty{display:none}
+}
+
 .fields{display:flex;flex-direction:column;gap:0}
 .field{display:grid;grid-template-columns:230px minmax(0,1fr);gap:20px;padding:15px 0;border-top:1px solid var(--hair)}
 .field:last-child{border-bottom:1px solid var(--hair)}
@@ -448,7 +475,9 @@ c0 -76 -3 -253 -7 -393 l-6 -254 -91 -71 c-193 -151 -358 -247 -486 -281 -94
       <p class="alede">Бесплатный онлайн-инструмент, который проводит через разработку
         бренд-стратегии за 45 шагов: от анализа среды и рынка до позиционирования,
         миссии и поиска голубого океана. Без регистрации, данные остаются в вашем
-        браузере. У каждого раздела есть объяснение и разобранный пример.</p>
+        браузере. У каждого раздела есть объяснение и разобранный пример.
+        Отдельным экраном собирается «Стратегия на одной странице» — выжимка
+        из заполненного для тех, кто не будет читать всё целиком.</p>
 
       <h2>Что внутри: 45 разделов</h2>
       <div class="agrid">
@@ -1147,7 +1176,17 @@ const SECTIONS = [
  quads:[{k:"elim",label:"Исключить",sub:"Что отрасль считает обязательным, а клиенту не нужно"},
         {k:"red",label:"Уменьшить",sub:"Что переоценено и может быть ниже стандарта отрасли"},
         {k:"raise",label:"Увеличить",sub:"Что недооценено и должно быть выше стандарта",tone:"pos"},
-        {k:"create",label:"Создать",sub:"Чего отрасль никогда не предлагала",tone:"pos"}]}
+        {k:"create",label:"Создать",sub:"Чего отрасль никогда не предлагала",tone:"pos"}]},
+
+/* ═══ СВОДКА ═══════════════════════════════════════════
+   Не раздел, а вид на уже заполненное: ничего не вводится,
+   всё собирается из других разделов. Помечен sum:true и поэтому
+   не считается в «45 разделов» и в проценте заполнения. */
+{id:"onepage", group:"Итог", title:"Стратегия на одной странице", type:"summary",
+ nonum:true, sum:true,
+ lede:"Всё главное из заполненных разделов, собранное на один экран. Здесь ничего не вводится — только показывается. Пустые строки подскажут, где стратегия ещё не держится.",
+ what:"Выжимка стратегии для тех, кто не будет читать её целиком: руководителя, инвестора, подрядчика. Полную стратегию читают единицы, одну страницу — все.",
+ hint:"Блоки собираются автоматически из разделов. Если строка пустая, нажмите на название раздела рядом с ней и заполните. Чтобы выгрузить только эту страницу, погасите точки всех остальных разделов и нажмите PDF."}
 ];
 
 /* ═══ ПРИМЕРЫ ═══════════════════════════════════════════
@@ -1531,6 +1570,8 @@ function tableRows(sc){
 /* ═══ ЗАПОЛНЕННОСТЬ ═══ */
 function fill(sc){
   const v = S.data[sc.id] || {};
+  if(sc.type==="summary"){ const b = summaryBlocks(); 
+    return { got: b.filter(x=>x.val).length, need: b.length }; }
   if(sc.type==="start") return { got: nz(S.meta.name)?1:0, need:1 };
   if(sc.type==="fields") return { got: sc.fields.filter(f=>nz(v[f.k])).length, need: sc.fields.length };
   if(sc.type==="quad") return { got: sc.quads.filter(q=>nz(v[q.k])).length, need: sc.quads.length };
@@ -1583,8 +1624,10 @@ function lit(sc){
   return p === undefined ? auto(sc) : !!p;
 }
 function litCount(){ return SECTIONS.filter(lit).length; }
+/* Сводка — вид, а не раздел: в «45 разделов» и в процент не входит. */
+function counted(){ return SECTIONS.filter(sc=>!sc.sum); }
 
-function total(){ let g=0,n=0; SECTIONS.forEach(sc=>{const f=fill(sc);g+=f.got;n+=f.need;}); return n ? (g>=n ? 100 : Math.min(99, Math.floor(g/n*100))) : 0; }
+function total(){ let g=0,n=0; counted().forEach(sc=>{const f=fill(sc);g+=f.got;n+=f.need;}); return n ? (g>=n ? 100 : Math.min(99, Math.floor(g/n*100))) : 0; }
 
 /* ═══ НАВИГАЦИЯ ═══ */
 const nav = document.getElementById("nav");
@@ -1619,6 +1662,99 @@ function renderNav(){
     k%10===1 && k%100!==11 ? "слайд" : (k%10>=2 && k%10<=4 && (k%100<10||k%100>=20) ? "слайда" : "слайдов");
 }
 
+/* ═══ СВОДКА ═══
+   Собирает выжимку из уже заполненных разделов. Ничего не хранит:
+   единственный источник — S.data, поэтому расходиться с разделами
+   она не может по устройству. */
+function sv(id, k){ return String(((S.data[id]||{})[k]) || "").trim(); }
+function srows(id){ return ((S.data[id]||{}).rows) || []; }
+
+/* Победитель в матрице с суммами по колонкам: «лучшее УТП», «главный мотив». */
+function gridTop(id, n){
+  const sc = sec(id); if(!sc) return [];
+  const v = S.data[id]; if(!v || !v.v) return [];
+  const rows = gridRows(sc), cols = gridCols(sc);
+  const byCol = sc.sumBy === "col";
+  const names = byCol ? cols : rows;
+  const other = byCol ? rows.length : cols.length;
+  return names.map((name, i) => ({
+      name: String(name).trim(),
+      s: byCol ? colSum(sc, v, i, other) : rowSum(sc, v, i, other) }))
+    .filter(x => x.name && x.s > 0)
+    .sort((a, b) => b.s - a.s)
+    .slice(0, n || 3);
+}
+
+/* Ёмкость рынка считается той же формулой, что и в разделе. */
+function capacityLine(){
+  const v = S.data.capacity || {};
+  const n = k => parseFloat(String(v[k]||"").replace(",", ".").replace(/\s/g, "")) || 0;
+  const fact = n("aud") * n("norm") * n("price");
+  const avail = fact * (n("share") / 100);
+  if(!avail) return "";
+  return money(avail) + " — доступная ёмкость, из " + money(fact) + " фактической";
+}
+
+function joinList(arr, sep){ return arr.filter(Boolean).join(sep || " · "); }
+
+function summaryBlocks(){
+  const st = S.data.start || {};
+  const core = srows("core");
+  /* Строки «Ядра ЦА» фиксированы и упорядочены, поэтому обращаемся по номеру:
+     0 — география, 1 — доход, 2 — кому нужен, 3 — возраст, 4 — проблема,
+     5 — мотив. По тексту искать нельзя: в английской сборке он другой. */
+  const coreAt = i => { const r = core[i]; return r ? String(r.val||"").trim() : ""; };
+  const types = srows("audience").map(r => (r.type||"").trim()).filter(Boolean);
+  const motives = gridTop("motive_power", 3).map(x => x.name);
+  const utp = gridTop("utp_score", 1).map(x => x.name);
+  const errc = S.data.errc || {};
+
+  return [
+    { k:"goal",  label:"Цель",               from:"smart",       val: sv("smart","sum") },
+    { k:"who",   label:"Кому продаём",       from:"core",
+      val: joinList([coreAt(2), coreAt(3), coreAt(1)], " · ") },
+    { k:"pain",  label:"Их главная проблема",from:"core",        val: coreAt(4) },
+    { k:"types", label:"Типажи",             from:"audience",    val: types.join(" · ") },
+    { k:"mot",   label:"Что ими движет",     from:"motive_power",val: motives.join(" · ") },
+    { k:"cap",   label:"Рынок",              from:"capacity",    val: capacityLine() },
+    { k:"utp",   label:"Наше УТП",           from:"utp_score",   val: utp.join("") },
+    { k:"pos",   label:"Позиционирование",   from:"pos_formula", val: sv("pos_formula","final") },
+    { k:"vic",   label:"От чего отказываемся", from:"victim",
+      val: joinList([sv("victim","reach"), sv("victim","line"), sv("victim","change")], " · ") },
+    { k:"mis",   label:"Миссия",             from:"mission",     val: sv("mission","final") },
+    { k:"blue",  label:"Где выходим из конкуренции", from:"errc",
+      val: joinList([ (errc.create||"").trim() && "Создаём: " + (errc.create||"").trim(),
+                      (errc.elim||"").trim()   && "Исключаем: " + (errc.elim||"").trim() ], " · ") },
+    { k:"todo",  label:"Ближайшие решения",  from:"swot_out",
+      val: joinList([sv("swot_out","f1"), sv("swot_out","f3")], " · ") }
+  ];
+}
+
+function summaryBody(sc){
+  const st = S.data.start || {};
+  const blocks = summaryBlocks();
+  const done = blocks.filter(b => b.val).length;
+  const head = joinList([ (st.company||"").trim(), (st.product||"").trim() ], " — ");
+  const meta = joinList([ (st.author||"").trim(), (st.period||"").trim() ], " · ");
+
+  const rows = blocks.map(b => b.val
+    ? `<div class="sumrow"><div class="sumlab">${esc(b.label)}</div>
+         <div class="sumval">${esc(b.val).replace(/\n+/g, "<br>")}</div></div>`
+    : `<div class="sumrow empty"><div class="sumlab">${esc(b.label)}</div>
+         <div class="sumval">— <button class="sumgo" data-go="${b.from}">заполнить: ${esc(sec(b.from) ? sec(b.from).title : b.from)}</button></div></div>`
+  ).join("");
+
+  return `<div class="sumsheet">
+    <div class="sumhead">
+      <b>${esc(head || S.meta.name || "Стратегия")}</b>
+      ${meta ? `<span>${esc(meta)}</span>` : ""}
+    </div>
+    ${rows}
+  </div>
+  <p class="sumnote">Заполнено ${done} из ${blocks.length}.
+    Страница обновляется сама, когда вы правите разделы.</p>`;
+}
+
 /* ═══ ОТРИСОВКА РАЗДЕЛА ═══ */
 function inner(sc){
   switch(sc.type){
@@ -1628,6 +1764,7 @@ function inner(sc){
     case "quad": return quadBody(sc);
     case "grid": return gridBody(sc);
     case "calc": return calcBody(sc);
+    case "summary": return summaryBody(sc);
     case "check": return checkBody(sc);
     case "hyp": return hypBody(sc);
     case "map": return mapBody(sc);
@@ -1646,10 +1783,10 @@ function body(sc){
     <div class="aids">
       ${sc.hint?`<button class="hintbtn" data-note="h-${sc.id}" aria-expanded="false">${BOOK} подробнее</button>`:""}
       ${sc.ex?`<button class="hintbtn" data-note="e-${sc.id}" aria-expanded="false">◇ пример</button>`:""}
-      <button class="hintbtn ai" disabled aria-disabled="true"
-        title="Автозаполнение с ИИ — скоро">${SPARK} AI</button>
-      <button class="hintbtn danger" data-clear="${sc.id}"
-        title="Стереть всё, что введено на этом слайде">${TRASH} очистить слайд</button>
+      ${sc.type==="summary"?"":`<button class="hintbtn ai" disabled aria-disabled="true"
+        title="Автозаполнение с ИИ — скоро">${SPARK} AI</button>`}
+      ${sc.type==="summary"?"":`<button class="hintbtn danger" data-clear="${sc.id}"
+        title="Стереть всё, что введено на этом слайде">${TRASH} очистить слайд</button>`}
     </div>
     ${sc.hint?`<div class="note" id="h-${sc.id}">
        ${sc.what?`<p class="whatis">${sc.what}</p>`:""}<div class="howto">${sc.hint}</div></div>`:""}
@@ -1673,7 +1810,7 @@ function footBody(sc){
 }
 
 function ctaOf(){ return SECTIONS.find(sc=>{const f=fill(sc);return sc.type!=="start"&&f.got<f.need;}); }
-function doneCount(){ return SECTIONS.filter(sc=>{const f=fill(sc);return f.got>=f.need;}).length; }
+function doneCount(){ return counted().filter(sc=>{const f=fill(sc);return f.got>=f.need;}).length; }
 
 function startBody(){
   const cta = ctaOf(), st = S.data.start||{};
@@ -1739,7 +1876,7 @@ function startBody(){
   </div>
   <div class="stats">
     <div class="stat"><b id="st-pct">${total()}%</b><span>заполнено</span></div>
-    <div class="stat"><b id="st-done">${doneCount()} / ${SECTIONS.length}</b><span>слайдов готово</span></div>
+    <div class="stat"><b id="st-done">${doneCount()} / ${counted().length}</b><span>слайдов готово</span></div>
     <div class="stat wide"><span>По вопросам и предложениям</span>
       <a href="mailto:fazullin@me.com">fazullin@me.com</a></div>
   </div>
@@ -1890,14 +2027,19 @@ function chartBody(sc, rows, cols, v){
       <rect x="0" y="0" width="${W}" height="${H}" fill="none"/>${g}${lines}${labels}</svg></div>`;
 }
 
+/* Один формат денег на весь файл. Раньше их было два — в разделе и в сводке —
+   и языковая заплатка чинила только первый. */
+function money(x){
+  return x>=1e6 ? (x/1e6).toFixed(1).replace(".",",")+" млрд ₽"
+       : x>0 ? Math.round(x).toLocaleString("ru-RU")+" тыс. ₽" : "—";
+}
 function calcBody(sc){
   const v = d(sc.id);
   const n = k => parseFloat(String(v[k]||"").replace(",",".").replace(/\s/g,"")) || 0;
   const fact = n("aud")*n("norm")*n("price");
   const pot  = n("aud")*n("max")*n("price");
   const avail= fact*(n("share")/100);
-  const fmt = x => x>=1e6 ? (x/1e6).toFixed(1).replace(".",",")+" млрд ₽"
-             : x>0 ? Math.round(x).toLocaleString("ru-RU")+" тыс. ₽" : "—";
+  const fmt = money;
   return `<div class="calcgrid">${sc.inputs.map(i=>`
     <div class="calcin"><label for="c-${i.k}">${esc(i.label)}</label>
       <input id="c-${i.k}" data-calc="${sc.id}" data-k="${i.k}" inputmode="decimal" value="${esc(v[i.k])}" placeholder="0">
@@ -2189,6 +2331,10 @@ function show(id){
     el.setAttribute("aria-current", on);
     el.parentElement.setAttribute("data-cur", on);
   });
+  /* Сводка собирается из чужих данных, поэтому её надо пересобрать
+     в момент показа: разделы могли поменяться после её последней отрисовки. */
+  const scNow = sec(id);
+  if(scNow && scNow.type === "summary") redraw(scNow, false);
   growAll(document.getElementById("sec-"+id));
   /* Описание продукта — часть первого экрана, а не хвост каждого раздела. */
   const ab = document.getElementById("about");
@@ -2202,7 +2348,7 @@ function refreshStart(){
   const p = document.getElementById("st-pct"), dn = document.getElementById("st-done"),
         cb = document.getElementById("ctabtn");
   if(p) p.textContent = total()+"%";
-  if(dn) dn.textContent = doneCount()+" / "+SECTIONS.length;
+  if(dn) dn.textContent = doneCount()+" / "+counted().length;
   if(cb){
     const c = ctaOf();
     cb.dataset.go = c ? c.id : "pest";
